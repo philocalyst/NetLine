@@ -211,6 +211,9 @@ NetLine requires the following Hammerspoon modules:
 
 The `hs.focus` module is used if available (for DND detection) but is optional.
 
+## Thanks to
+https://github.com/FuzzyIdeas/IsThereNet For the idea and implementation details, this is more or less a port of that into hammerspoon.
+
 ## Troubleshooting
 
 ### The status line doesn't appear
