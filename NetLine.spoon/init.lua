@@ -495,11 +495,29 @@ end
 
 -- ▰▰▰ Public Methods ▰▰▰ --
 
+--- obj:init()
+--- Method
+--- Initializes the Spoon by setting the log level and logging an initialization message.
+---
+--- Returns:
+---  * The Spoon object (self), allowing for method chaining.
 function obj:init()
   _setLogLevel()
   logger.i(obj.name .. " version " .. obj.version .. " initialized.")
+  return self
 end
 
+--- obj:start()
+--- Method
+--- Starts the Spoon: validates configuration, creates and starts a network reachability
+--- watcher for the configured targetHost, optionally starts a screen watcher, initializes
+--- internal state, updates the menubar/status bar, and performs an initial reachability check.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Spoon object (self), allowing for method chaining.
 function obj:start()
   if obj.isRunning then
     logger.w("Already running.")
@@ -529,7 +547,7 @@ function obj:start()
   end
   obj.reachabilityWatcher = watcher
 
-  obj.reachabilityWatcher:setCallback(function(reachObj, flags)
+  obj.reachabilityWatcher:setCallback(function(_, flags)
     _handleReachabilityChange(flags)
   end)
 
@@ -564,7 +582,8 @@ function obj:start()
         logger.i("Performing initial reachability check. Flags:", initialFlags)
         _handleReachabilityChange(initialFlags)
       else
-        logger.e("Error getting initial reachability status:", flagsErr, "- Status remains unknown.")
+        logger.e("Error getting initial reachability status:", flagsErr,
+          "- Status remains unknown.")
       end
     elseif not obj.isRunning then
       logger.i("Spoon stopped before initial check could run.")
@@ -577,6 +596,16 @@ function obj:start()
   return self
 end
 
+--- obj:stop()
+--- Method
+--- Stops the Spoon: stops and clears the network reachability and screen watchers,
+--- cleans up any visual elements, and resets internal state.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Spoon object (self), allowing for method chaining.
 function obj:stop()
   if not obj.isRunning then
     logger.w("Not running.")
@@ -607,6 +636,23 @@ function obj:stop()
   return self
 end
 
+--- obj:status()
+--- Method
+--- Retrieves the current status of the Spoon, including whether it's running,
+--- the last displayed reachability status, configured target host, whether the
+--- reachability watcher is active, current reachability flags, and any active canvases.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table containing:
+---    - running: boolean, true if the Spoon is currently running.
+---    - lastDisplayedStatus: string, the last reachability status shown.
+---    - targetHost: string, the configured target host.
+---    - watcherActive: boolean, true if the reachability watcher is active.
+---    - currentReachabilityFlags: userdata or nil, the latest flags from the watcher.
+---    - activeCanvases: table, a map of canvas identifiers to true for active canvases.
 function obj:status()
   local watcherStatus = "inactive"
   local currentFlags = nil
@@ -616,12 +662,12 @@ function obj:status()
   end
 
   return {
-    running = obj.isRunning,
-    lastDisplayedStatus = obj.lastReachabilityStatus,
-    targetHost = _getConfig("targetHost"),
-    watcherActive = (watcherStatus == "active"),
+    running                  = obj.isRunning,
+    lastDisplayedStatus      = obj.lastReachabilityStatus,
+    targetHost               = _getConfig("targetHost"),
+    watcherActive            = (watcherStatus == "active"),
     currentReachabilityFlags = currentFlags,
-    activeCanvases = utils.map(obj.statusCanvases, function(_, _) return true end)
+    activeCanvases           = utils.map(obj.statusCanvases, function(_, _) return true end)
   }
 end
 
